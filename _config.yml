@@ -13,7 +13,7 @@ timezone: ""
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://hseeberger.github.io
+url: https://lywa1998.github.io
 permalink: :title/
 permalink_defaults:
 pretty_urls:
@@ -61,7 +61,7 @@ prismjs:
 # per_page: Posts displayed per page. (0 = disable pagination)
 # order_by: Posts order. (Order by date descending by default)
 index_generator:
-  path: "https://heikoseeberger.de"
+  path: "https://lywa1998.github.io"
   per_page: 10
   order_by: -date
 
@@ -110,12 +110,12 @@ theme_config:
     articles: /archives/
     about: /about/
   social_links:
-    github: https://github.com/hseeberger
-    gitlab: https://gitlab.com/hseeberger
-    mastodon: https://hachyderm.io/@hseeberger
-    twitter: https://twitter.com/hseeberger
-    linkedin: https://www.linkedin.com/in/heikoseeberger
-  projects_url: https://github.com/hseeberger
+    github: https://github.com/lywa1998
+    # gitlab: https://gitlab.com/hseeberger
+    # mastodon: https://hachyderm.io/@hseeberger
+    # twitter: https://twitter.com/hseeberger
+    # linkedin: https://www.linkedin.com/in/heikoseeberger
+  projects_url: https://github.com/lywa1998
   tags_overview: true
   colorscheme: dark
   highlight: solarized-dark
@@ -142,4 +142,4 @@ theme_config:
 
 plausible:
   enable: true
-  domain: heikoseeberger.de
+  domain: lywa1998.github.io
