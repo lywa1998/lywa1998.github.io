@@ -3,17 +3,17 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Heiko's Blog
+title: Riddler's Blog
 subtitle: It is not the answer that enlightens, but the quest(ion)
 description: It is not the answer that enlightens, but the quest(ion).
-keywords: Heiko Seeberger blog
-author: Heiko Seeberger
-language: en
+keywords: Riddler blog
+author: Riddler
+language: zh_CN
 timezone: ""
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://lywa1998.github.io
+url: https://lywa1998.github.io/
 permalink: :title/
 permalink_defaults:
 pretty_urls:
@@ -135,11 +135,11 @@ theme_config:
   rss:
   utterances:
     enabled: true
-    repo: hseeberger/comments
+    repo: lywa1998/comments
     issue_term: pathname
     label: utteranc
     theme: github-dark
 
 plausible:
   enable: true
-  domain: lywa1998.github.io
+  domain: https://lywa1998.github.io
