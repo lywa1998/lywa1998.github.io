@@ -9,30 +9,30 @@
     <meta name="description" content="In Scala 2 – like in Java – we have universal equality which means that we can compare two objects – each of any type – for equality: 1234567scala&gt; final case class Foo()scala&gt; Foo() &#x3D;&#x3D; Foo()val">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Learn myself some Scala 3, episode 4: strict equality">
-<meta property="og:url" content="https://lywa1998.github.io/2020-01-07-dotty-4/index.html">
-<meta property="og:site_name" content="Heiko&#39;s Blog">
+<meta property="og:url" content="https://lywa1998.github.io/project/2020-01-07-dotty-4/index.html">
+<meta property="og:site_name" content="Riddler&#39;s Blog">
 <meta property="og:description" content="In Scala 2 – like in Java – we have universal equality which means that we can compare two objects – each of any type – for equality: 1234567scala&gt; final case class Foo()scala&gt; Foo() &#x3D;&#x3D; Foo()val">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2020-01-07T00:00:00.000Z">
-<meta property="article:modified_time" content="2024-01-05T06:45:38.087Z">
-<meta property="article:author" content="Heiko Seeberger">
+<meta property="article:modified_time" content="2024-01-05T11:37:42.845Z">
+<meta property="article:author" content="Riddler">
 <meta property="article:tag" content="scala">
 <meta name="twitter:card" content="summary">
     
     
       
         
-          <link rel="shortcut icon" href="/img/favicon.ico">
+          <link rel="shortcut icon" href="/project/img/favicon.ico">
         
       
       
         
-          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
+          <link rel="icon" type="image/png" href="/project/img/favicon.ico" sizes="192x192">
         
       
       
         
-          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
+          <link rel="apple-touch-icon" sizes="180x180" href="/project/img/favicon.ico">
         
       
     
@@ -40,7 +40,7 @@
     <title>Learn myself some Scala 3, episode 4: strict equality</title>
     <!-- styles -->
     
-<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/project/css/style.css">
 
     <!-- persian styles -->
     
@@ -49,7 +49,7 @@
     
 	<!-- mathjax -->
 	
-<!-- hexo injector head_end start --><script async defer data-domain="lywa1998.github.io" src="https://plausible.io/js/plausible.js" ></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+<!-- hexo injector head_end start --><script async defer data-domain="https://lywa1998.github.io" src="https://plausible.io/js/plausible.js" ></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
 
 <body class="max-width mx-auto px3 ltr">
     
@@ -61,11 +61,11 @@
     <span id="nav">
       <ul>
         <!--
-       --><li><a href="/">Home</a></li><!--
+       --><li><a href="/project/">Home</a></li><!--
      --><!--
-       --><li><a href="/archives/">Writing</a></li><!--
+       --><li><a href="/project/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/about/">About</a></li><!--
+       --><li><a href="/project/about/">About</a></li><!--
      -->
       </ul>
     </span>
@@ -73,10 +73,10 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post" href="/2022/10/20/2022-10-21-tower-1/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Previous post" href="/project/2022/10/20/2022-10-21-tower-1/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post" href="/2019-12-10-dotty-3/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Next post" href="/project/2019-12-10-dotty-3/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -89,17 +89,17 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/2020-01-07-dotty-4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/2020-01-07-dotty-4/&text=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/2020-01-07-dotty-4/&is_video=false&description=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Learn myself some Scala 3, episode 4: strict equality&body=Check out this article: https://lywa1998.github.io/2020-01-07-dotty-4/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/2020-01-07-dotty-4/&name=Learn myself some Scala 3, episode 4: strict equality&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/2020-01-07-dotty-4/&t=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/project/2020-01-07-dotty-4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&text=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&is_video=false&description=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Learn myself some Scala 3, episode 4: strict equality&body=Check out this article: https://lywa1998.github.io/project/2020-01-07-dotty-4/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&name=Learn myself some Scala 3, episode 4: strict equality&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/project/2020-01-07-dotty-4/&t=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -123,7 +123,7 @@
 
     <div class="meta">
       <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
-        <span itemprop="name">Heiko Seeberger</span>
+        <span itemprop="name">Riddler</span>
       </span>
       
     <div class="postdate">
@@ -139,7 +139,7 @@
       
     <div class="article-tag">
         <i class="fas fa-tag"></i>
-        <a class="tag-link-link" href="/tags/scala/" rel="tag">scala</a>
+        <a class="tag-link-link" href="/project/tags/scala/" rel="tag">scala</a>
     </div>
 
 
@@ -189,11 +189,11 @@
     <div id="nav-footer" style="display: none">
       <ul>
          
-          <li><a href="/">Home</a></li>
+          <li><a href="/project/">Home</a></li>
          
-          <li><a href="/archives/">Writing</a></li>
+          <li><a href="/project/archives/">Writing</a></li>
          
-          <li><a href="/about/">About</a></li>
+          <li><a href="/project/about/">About</a></li>
         
       </ul>
     </div>
@@ -204,17 +204,17 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/2020-01-07-dotty-4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/2020-01-07-dotty-4/&text=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/2020-01-07-dotty-4/&is_video=false&description=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Learn myself some Scala 3, episode 4: strict equality&body=Check out this article: https://lywa1998.github.io/2020-01-07-dotty-4/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/2020-01-07-dotty-4/&name=Learn myself some Scala 3, episode 4: strict equality&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/2020-01-07-dotty-4/&t=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/project/2020-01-07-dotty-4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&text=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&is_video=false&description=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Learn myself some Scala 3, episode 4: strict equality&body=Check out this article: https://lywa1998.github.io/project/2020-01-07-dotty-4/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&title=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/project/2020-01-07-dotty-4/&name=Learn myself some Scala 3, episode 4: strict equality&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/project/2020-01-07-dotty-4/&t=Learn myself some Scala 3, episode 4: strict equality"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -236,18 +236,18 @@
     
     
     2016-2024
-    Heiko Seeberger
+    Riddler
   </div>
   <div><a rel="me noopener" target="_blank" href="https://hachyderm.io/@hseeberger"></a></div>
   <div class="footer-right">
     <nav>
       <ul>
         <!--
-       --><li><a href="/">Home</a></li><!--
+       --><li><a href="/project/">Home</a></li><!--
      --><!--
-       --><li><a href="/archives/">Writing</a></li><!--
+       --><li><a href="/project/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/about/">About</a></li><!--
+       --><li><a href="/project/about/">About</a></li><!--
      -->
       </ul>
     </nav>
@@ -294,7 +294,7 @@
   </script>
 
 
-<script src="/js/main.js"></script>
+<script src="/project/js/main.js"></script>
 
 <!-- search -->
 
@@ -311,7 +311,7 @@
 <!-- utterances Comments -->
 
     <script type="text/javascript">
-      var utterances_repo = 'hseeberger/comments';
+      var utterances_repo = 'lywa1998/comments';
       var utterances_issue_term = 'pathname';
       var utterances_label = 'utteranc';
       var utterances_theme = 'github-dark';
