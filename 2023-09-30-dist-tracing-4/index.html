@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang=en>
+<html lang=zh>
 <head>
     <!-- so meta -->
     <meta charset="utf-8">
@@ -9,34 +9,34 @@
     <meta name="description" content="In the previous episodes we coverd logging basics, tracing basics and inter-service tracing. Now it is time to finish up this series with explaining how to correlate logs and traces. Why should we bot">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Distributed Tracing in Rust, Episode 4: correlating logs and traces">
-<meta property="og:url" content="https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/index.html">
+<meta property="og:url" content="https://lywa1998.github.io/2023-09-30-dist-tracing-4/index.html">
 <meta property="og:site_name" content="Riddler&#39;s Blog">
 <meta property="og:description" content="In the previous episodes we coverd logging basics, tracing basics and inter-service tracing. Now it is time to finish up this series with explaining how to correlate logs and traces. Why should we bot">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://lywa1998.github.io/project/img/hello-tracing-rs.png">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lywa1998.github.io/img/hello-tracing-rs.png">
 <meta property="article:published_time" content="2023-09-30T00:00:00.000Z">
-<meta property="article:modified_time" content="2024-01-08T01:20:52.056Z">
+<meta property="article:modified_time" content="2024-01-08T01:35:33.992Z">
 <meta property="article:author" content="Riddler">
 <meta property="article:tag" content="rust">
 <meta property="article:tag" content="tracing">
 <meta property="article:tag" content="opentelemetry">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lywa1998.github.io/project/img/hello-tracing-rs.png">
+<meta name="twitter:image" content="https://lywa1998.github.io/img/hello-tracing-rs.png">
     
     
       
         
-          <link rel="shortcut icon" href="/project/img/favicon.ico">
+          <link rel="shortcut icon" href="/img/favicon.ico">
         
       
       
         
-          <link rel="icon" type="image/png" href="/project/img/favicon.ico" sizes="192x192">
+          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
         
       
       
         
-          <link rel="apple-touch-icon" sizes="180x180" href="/project/img/favicon.ico">
+          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
         
       
     
@@ -44,7 +44,7 @@
     <title>Distributed Tracing in Rust, Episode 4: correlating logs and traces</title>
     <!-- styles -->
     
-<link rel="stylesheet" href="/project/css/style.css">
+<link rel="stylesheet" href="/css/style.css">
 
     <!-- persian styles -->
     
@@ -65,11 +65,11 @@
     <span id="nav">
       <ul>
         <!--
-       --><li><a href="/project/">Home</a></li><!--
+       --><li><a href="/">Home</a></li><!--
      --><!--
-       --><li><a href="/project/archives/">Writing</a></li><!--
+       --><li><a href="/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/project/about/">About</a></li><!--
+       --><li><a href="/about/">About</a></li><!--
      -->
       </ul>
     </span>
@@ -77,10 +77,10 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post" href="/project/2024-01-01-printing-errors/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Previous post" href="/2024-01-01-printing-errors/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post" href="/project/2023-08-28-dist-tracing-3/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Next post" href="/2023-08-28-dist-tracing-3/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -93,17 +93,17 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&text=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&is_video=false&description=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 4: correlating logs and traces&body=Check out this article: https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&name=Distributed Tracing in Rust, Episode 4: correlating logs and traces&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&t=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/2023-09-30-dist-tracing-4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&text=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&is_video=false&description=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 4: correlating logs and traces&body=Check out this article: https://lywa1998.github.io/2023-09-30-dist-tracing-4/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&name=Distributed Tracing in Rust, Episode 4: correlating logs and traces&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&t=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -143,7 +143,7 @@
       
     <div class="article-tag">
         <i class="fas fa-tag"></i>
-        <a class="tag-link-link" href="/project/tags/opentelemetry/" rel="tag">opentelemetry</a>, <a class="tag-link-link" href="/project/tags/rust/" rel="tag">rust</a>, <a class="tag-link-link" href="/project/tags/tracing/" rel="tag">tracing</a>
+        <a class="tag-link-link" href="/tags/opentelemetry/" rel="tag">opentelemetry</a>, <a class="tag-link-link" href="/tags/rust/" rel="tag">rust</a>, <a class="tag-link-link" href="/tags/tracing/" rel="tag">tracing</a>
     </div>
 
 
@@ -170,7 +170,7 @@
 
 <p>Notice the <code>trace_id</code> field on the topmost span. This is already very helpful in “manually” correlating log events across the call stack and across different services. But, depending on the capabilities of the telemetry backend of choice, there should be a deep integration between logs and traces such that we can navigate from one to another.</p>
 <p>Grafana Cloud – using Loki for logs and Tempo for traces – can do this out of the box without any further processing of the log or trace events:</p>
-<p><img src="/project/img/hello-tracing-rs.png"></p>
+<p><img src="/img/hello-tracing-rs.png"></p>
 <p>This picture – the same like in the first episode – shows a structured log event on the left and an associated trace on the right. Notice the blue button at the bottom of the left half, right of the trace ID, which is a link pointing to the traces. Similar links taking us to the corresponding logs exist for the visualization of traces if we drill down into a particular span to show its details.</p>
 <p>We finally have arrived at the end of this series. Thank you for staying around until here. Let me know if you have any questions. And of course the example code can be found at <a target="_blank" rel="noopener" href="https://github.com/hseeberger/hello-tracing-rs/">hello-tracing-rs on GitHub</a>.</p>
 
@@ -192,11 +192,11 @@
     <div id="nav-footer" style="display: none">
       <ul>
          
-          <li><a href="/project/">Home</a></li>
+          <li><a href="/">Home</a></li>
          
-          <li><a href="/project/archives/">Writing</a></li>
+          <li><a href="/archives/">Writing</a></li>
          
-          <li><a href="/project/about/">About</a></li>
+          <li><a href="/about/">About</a></li>
         
       </ul>
     </div>
@@ -207,17 +207,17 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&text=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&is_video=false&description=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 4: correlating logs and traces&body=Check out this article: https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&name=Distributed Tracing in Rust, Episode 4: correlating logs and traces&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/project/2023-09-30-dist-tracing-4/&t=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/2023-09-30-dist-tracing-4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&text=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&is_video=false&description=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 4: correlating logs and traces&body=Check out this article: https://lywa1998.github.io/2023-09-30-dist-tracing-4/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&name=Distributed Tracing in Rust, Episode 4: correlating logs and traces&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/2023-09-30-dist-tracing-4/&t=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -246,11 +246,11 @@
     <nav>
       <ul>
         <!--
-       --><li><a href="/project/">Home</a></li><!--
+       --><li><a href="/">Home</a></li><!--
      --><!--
-       --><li><a href="/project/archives/">Writing</a></li><!--
+       --><li><a href="/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/project/about/">About</a></li><!--
+       --><li><a href="/about/">About</a></li><!--
      -->
       </ul>
     </nav>
@@ -297,7 +297,7 @@
   </script>
 
 
-<script src="/project/js/main.js"></script>
+<script src="/js/main.js"></script>
 
 <!-- search -->
 

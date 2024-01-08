@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang=en>
+<html lang=zh>
 <head>
     <!-- so meta -->
     <meta charset="utf-8">
@@ -9,34 +9,34 @@
     <meta name="description" content="In the previous episode we were looking at the basics of logging with the Tokio tracing framework; now we are covering tracing. As a quick recap, a trace represents a flow of execution through a syste">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Distributed Tracing in Rust, Episode 2: tracing basics">
-<meta property="og:url" content="https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/index.html">
+<meta property="og:url" content="https://lywa1998.github.io/2023-08-18-dist-tracing-2/index.html">
 <meta property="og:site_name" content="Riddler&#39;s Blog">
 <meta property="og:description" content="In the previous episode we were looking at the basics of logging with the Tokio tracing framework; now we are covering tracing. As a quick recap, a trace represents a flow of execution through a syste">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://lywa1998.github.io/project/img/hello-tracing-rs-2.png">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://lywa1998.github.io/img/hello-tracing-rs-2.png">
 <meta property="article:published_time" content="2023-08-18T00:00:00.000Z">
-<meta property="article:modified_time" content="2024-01-08T01:20:52.056Z">
+<meta property="article:modified_time" content="2024-01-08T01:35:33.992Z">
 <meta property="article:author" content="Riddler">
 <meta property="article:tag" content="rust">
 <meta property="article:tag" content="tracing">
 <meta property="article:tag" content="opentelemetry">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://lywa1998.github.io/project/img/hello-tracing-rs-2.png">
+<meta name="twitter:image" content="https://lywa1998.github.io/img/hello-tracing-rs-2.png">
     
     
       
         
-          <link rel="shortcut icon" href="/project/img/favicon.ico">
+          <link rel="shortcut icon" href="/img/favicon.ico">
         
       
       
         
-          <link rel="icon" type="image/png" href="/project/img/favicon.ico" sizes="192x192">
+          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
         
       
       
         
-          <link rel="apple-touch-icon" sizes="180x180" href="/project/img/favicon.ico">
+          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
         
       
     
@@ -44,7 +44,7 @@
     <title>Distributed Tracing in Rust, Episode 2: tracing basics</title>
     <!-- styles -->
     
-<link rel="stylesheet" href="/project/css/style.css">
+<link rel="stylesheet" href="/css/style.css">
 
     <!-- persian styles -->
     
@@ -65,11 +65,11 @@
     <span id="nav">
       <ul>
         <!--
-       --><li><a href="/project/">Home</a></li><!--
+       --><li><a href="/">Home</a></li><!--
      --><!--
-       --><li><a href="/project/archives/">Writing</a></li><!--
+       --><li><a href="/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/project/about/">About</a></li><!--
+       --><li><a href="/about/">About</a></li><!--
      -->
       </ul>
     </span>
@@ -77,10 +77,10 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post" href="/project/2023-08-28-dist-tracing-3/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Previous post" href="/2023-08-28-dist-tracing-3/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post" href="/project/2023-07-29-dist-tracing-1/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Next post" href="/2023-07-29-dist-tracing-1/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -93,17 +93,17 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&text=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&is_video=false&description=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 2: tracing basics&body=Check out this article: https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&name=Distributed Tracing in Rust, Episode 2: tracing basics&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&t=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/2023-08-18-dist-tracing-2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&text=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&is_video=false&description=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 2: tracing basics&body=Check out this article: https://lywa1998.github.io/2023-08-18-dist-tracing-2/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&name=Distributed Tracing in Rust, Episode 2: tracing basics&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&t=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -143,7 +143,7 @@
       
     <div class="article-tag">
         <i class="fas fa-tag"></i>
-        <a class="tag-link-link" href="/project/tags/opentelemetry/" rel="tag">opentelemetry</a>, <a class="tag-link-link" href="/project/tags/rust/" rel="tag">rust</a>, <a class="tag-link-link" href="/project/tags/tracing/" rel="tag">tracing</a>
+        <a class="tag-link-link" href="/tags/opentelemetry/" rel="tag">opentelemetry</a>, <a class="tag-link-link" href="/tags/rust/" rel="tag">rust</a>, <a class="tag-link-link" href="/tags/tracing/" rel="tag">tracing</a>
     </div>
 
 
@@ -155,7 +155,7 @@
     <p>In the <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-07-29-dist-tracing-1/">previous episode</a> we were looking at the basics of logging with the Tokio tracing framework; now we are covering tracing.</p>
 <p>As a quick recap, a trace represents a flow of execution through a system in some period of time. It is made up of at least a root span covering the complete flow and potentially one or more sequential sub spans which themselves can contain sub spans. More details and a formal specification can be found at <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/observability-primer/">OpenTelemetry</a>.</p>
 <p>The following picture shows a simple example of a trace visualized with Grafana Cloud involving two services:</p>
-<p><img src="/project/img/hello-tracing-rs-2.png"></p>
+<p><img src="/img/hello-tracing-rs-2.png"></p>
 <p>To understand this trace, we have to understand how to propagate trace information – the so called trace context – across services. But before that, let’s see how we can create spans in code, for which the <a target="_blank" rel="noopener" href="https://crates.io/crates/tracing"><code>tracing</code></a> crate provides two ways: programatically and via the <code>instrument</code> attribute. The latter is easy to use and convenient to add spans to functions:</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[instrument(name = <span class="string">&quot;hello-handler&quot;</span>, skip(app_state))]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">hello</span>(<span class="title function_ invoke__">State</span>(app_state): State&lt;AppState&gt;) <span class="punctuation">-&gt;</span> <span class="keyword">impl</span> <span class="title class_">IntoResponse</span> &#123;</span><br><span class="line">    app_state.backend.<span class="title function_ invoke__">hello</span>().<span class="keyword">await</span>.<span class="title function_ invoke__">map_err</span>(internal_error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -184,11 +184,11 @@
     <div id="nav-footer" style="display: none">
       <ul>
          
-          <li><a href="/project/">Home</a></li>
+          <li><a href="/">Home</a></li>
          
-          <li><a href="/project/archives/">Writing</a></li>
+          <li><a href="/archives/">Writing</a></li>
          
-          <li><a href="/project/about/">About</a></li>
+          <li><a href="/about/">About</a></li>
         
       </ul>
     </div>
@@ -199,17 +199,17 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&text=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&is_video=false&description=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 2: tracing basics&body=Check out this article: https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&name=Distributed Tracing in Rust, Episode 2: tracing basics&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/project/2023-08-18-dist-tracing-2/&t=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://lywa1998.github.io/2023-08-18-dist-tracing-2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&text=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&is_video=false&description=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 2: tracing basics&body=Check out this article: https://lywa1998.github.io/2023-08-18-dist-tracing-2/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&name=Distributed Tracing in Rust, Episode 2: tracing basics&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://lywa1998.github.io/2023-08-18-dist-tracing-2/&t=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -238,11 +238,11 @@
     <nav>
       <ul>
         <!--
-       --><li><a href="/project/">Home</a></li><!--
+       --><li><a href="/">Home</a></li><!--
      --><!--
-       --><li><a href="/project/archives/">Writing</a></li><!--
+       --><li><a href="/archives/">Writing</a></li><!--
      --><!--
-       --><li><a href="/project/about/">About</a></li><!--
+       --><li><a href="/about/">About</a></li><!--
      -->
       </ul>
     </nav>
@@ -289,7 +289,7 @@
   </script>
 
 
-<script src="/project/js/main.js"></script>
+<script src="/js/main.js"></script>
 
 <!-- search -->
 
