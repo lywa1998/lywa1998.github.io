@@ -1,0 +1,17 @@
+// Static tasks configuration.
+//
+// Example:
+[
+  {
+    "label": "Typst: export file",
+    "command": "typst",
+    "args": [
+      "compile",
+      "-f",
+      "svg",
+      "$ZED_FILE",
+      "$ZED_WORKTREE_ROOT/assets/notes/$ZED_STEM.svg"
+    ],
+    "hide": "on_success"
+  }
+]
