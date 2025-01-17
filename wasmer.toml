@@ -2,7 +2,7 @@
 "wasmer/static-web-server" = "^1"
 
 [fs]
-"/public" = "target/dx/blog/debug/web/public"
+"/public" = "target/dx/blog/release/web/public"
 "/settings" = "settings"
 
 [[command]]
