@@ -1,0 +1,9 @@
+pub mod layout;
+pub mod home;
+pub mod articles;
+pub mod about;
+pub mod post;
+pub mod footer;
+pub mod header;
+pub mod nav;
+pub mod post_card;

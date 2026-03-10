@@ -1,0 +1,129 @@
+name: Build and Deploy Pages
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Dioxus CLI
+        run: cargo install --locked dioxus-cli --version 0.7.1
+
+      - name: Build web app
+        run: dx build --platform web --release
+
+      - name: Collect static files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APP_NAME="$(grep -m1 '^name\s*=\s*"' Cargo.toml | sed -E 's/name\s*=\s*"([^"]+)"/\1/')"
+
+          CANDIDATES=(
+            "target/dx/${APP_NAME}/release/web/public"
+            "target/dx/${APP_NAME}/web/public"
+            "dist"
+            "public"
+          )
+
+          OUT_DIR=""
+          for dir in "${CANDIDATES[@]}"; do
+            if [ -d "$dir" ]; then
+              OUT_DIR="$dir"
+              break
+            fi
+          done
+
+          if [ -z "$OUT_DIR" ]; then
+            echo "Could not find Dioxus web output directory."
+            echo "Checked: ${CANDIDATES[*]}"
+            exit 1
+          fi
+
+          rm -rf site
+          mkdir -p site
+          cp -R "$OUT_DIR"/* site/
+
+          # Adapt static paths for GitHub Pages project sites (/repo-name).
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          REPO="${GITHUB_REPOSITORY##*/}"
+          if [ "$REPO" = "${OWNER}.github.io" ]; then
+            BASE_PATH=""
+          else
+            BASE_PATH="/${REPO}"
+          fi
+
+          if [ -n "$BASE_PATH" ]; then
+            export BASE_PATH
+            python3 - <<'PY'
+from pathlib import Path
+import os
+import re
+
+base = os.environ["BASE_PATH"]
+
+for html_file in Path("site").rglob("*.html"):
+    text = html_file.read_text(encoding="utf-8")
+    if "<base href=" not in text and "<head>" in text:
+        text = text.replace("<head>", f"<head>\n    <base href=\"{base}/\">", 1)
+    text = re.sub(r'(\b(?:href|src)=["\'])/(?!/)', rf'\1{base}/', text)
+    html_file.write_text(text, encoding="utf-8")
+
+for js_file in Path("site").rglob("*.js"):
+    text = js_file.read_text(encoding="utf-8")
+    text = text.replace('"/assets/', f'"{base}/assets/')
+    text = text.replace("'/assets/", f"'{base}/assets/")
+    js_file.write_text(text, encoding="utf-8")
+
+for css_file in Path("site").rglob("*.css"):
+    text = css_file.read_text(encoding="utf-8")
+    text = text.replace("url(/assets/", f"url({base}/assets/")
+    css_file.write_text(text, encoding="utf-8")
+PY
+          fi
+
+          # GitHub Pages static hosting helpers.
+          cp site/index.html site/404.html
+          touch site/.nojekyll
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
