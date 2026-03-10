@@ -75,31 +75,7 @@ jobs:
 
           if [ -n "$BASE_PATH" ]; then
             export BASE_PATH
-            python3 - <<'PY'
-from pathlib import Path
-import os
-import re
-
-base = os.environ["BASE_PATH"]
-
-for html_file in Path("site").rglob("*.html"):
-    text = html_file.read_text(encoding="utf-8")
-    if "<base href=" not in text and "<head>" in text:
-        text = text.replace("<head>", f"<head>\n    <base href=\"{base}/\">", 1)
-    text = re.sub(r'(\b(?:href|src)=["\'])/(?!/)', rf'\1{base}/', text)
-    html_file.write_text(text, encoding="utf-8")
-
-for js_file in Path("site").rglob("*.js"):
-    text = js_file.read_text(encoding="utf-8")
-    text = text.replace('"/assets/', f'"{base}/assets/')
-    text = text.replace("'/assets/", f"'{base}/assets/")
-    js_file.write_text(text, encoding="utf-8")
-
-for css_file in Path("site").rglob("*.css"):
-    text = css_file.read_text(encoding="utf-8")
-    text = text.replace("url(/assets/", f"url({base}/assets/")
-    css_file.write_text(text, encoding="utf-8")
-PY
+            python3 -c $'from pathlib import Path\nimport os\nimport re\n\nbase = os.environ["BASE_PATH"]\n\nfor html_file in Path("site").rglob("*.html"):\n    text = html_file.read_text(encoding="utf-8")\n    if "<base href=" not in text and "<head>" in text:\n        text = text.replace("<head>", f"<head>\\n    <base href=\\"{base}/\\">", 1)\n    text = re.sub(r"(\\b(?:href|src)=[\\"\\\'])/(?!/)", rf"\\1{base}/", text)\n    html_file.write_text(text, encoding="utf-8")\n\nfor js_file in Path("site").rglob("*.js"):\n    text = js_file.read_text(encoding="utf-8")\n    text = text.replace(\'"/assets/\', f\'"{base}/assets/\')\n    text = text.replace("\'/assets/", f"\'{base}/assets/")\n    js_file.write_text(text, encoding="utf-8")\n\nfor css_file in Path("site").rglob("*.css"):\n    text = css_file.read_text(encoding="utf-8")\n    text = text.replace("url(/assets/", f"url({base}/assets/")\n    css_file.write_text(text, encoding="utf-8")'
           fi
 
           # GitHub Pages static hosting helpers.
