@@ -30,36 +30,33 @@ jobs:
         uses: cargo-bins/cargo-binstall@main
 
       - name: Install Dioxus CLI
-        run: cargo binstall --no-confirm dioxus-cli@0.7.1
+        run: cargo binstall --no-confirm dioxus-cli@0.7.3
+
+      - name: Clean previous web output
+        run: rm -rf target/dx/*/release/web/public target/dx/*/web/public || true
 
       - name: Build web app
-        run: dx build --platform web --release
+        run: RUSTC_WRAPPER= dx build --platform web --release
 
       - name: Collect static files
         shell: bash
         run: |
           set -euo pipefail
 
-          APP_NAME="$(grep -m1 '^name\s*=\s*"' Cargo.toml | sed -E 's/name\s*=\s*"([^"]+)"/\1/')"
-
-          CANDIDATES=(
-            "target/dx/${APP_NAME}/release/web/public"
-            "target/dx/${APP_NAME}/web/public"
-            "dist"
-            "public"
-          )
-
-          OUT_DIR=""
-          for dir in "${CANDIDATES[@]}"; do
-            if [ -d "$dir" ]; then
-              OUT_DIR="$dir"
-              break
-            fi
-          done
+          OUT_DIR="$(find target/dx -maxdepth 4 -type d -path '*/release/web/public' | head -n1 || true)"
+          if [ -z "$OUT_DIR" ]; then
+            OUT_DIR="$(find target/dx -maxdepth 4 -type d -path '*/web/public' | head -n1 || true)"
+          fi
+          if [ -z "$OUT_DIR" ] && [ -d dist ]; then
+            OUT_DIR="dist"
+          fi
+          if [ -z "$OUT_DIR" ] && [ -d public ]; then
+            OUT_DIR="public"
+          fi
 
           if [ -z "$OUT_DIR" ]; then
             echo "Could not find Dioxus web output directory."
-            echo "Checked: ${CANDIDATES[*]}"
+            echo "Checked target/dx/*/(release/)web/public, dist, public"
             exit 1
           fi
 
@@ -67,21 +64,7 @@ jobs:
           mkdir -p site
           cp -R "$OUT_DIR"/* site/
 
-          # Adapt static paths for GitHub Pages project sites (/repo-name).
-          OWNER="${GITHUB_REPOSITORY%%/*}"
-          REPO="${GITHUB_REPOSITORY##*/}"
-          if [ "$REPO" = "${OWNER}.github.io" ]; then
-            BASE_PATH=""
-          else
-            BASE_PATH="/${REPO}"
-          fi
-
-          if [ -n "$BASE_PATH" ]; then
-            export BASE_PATH
-            python3 -c $'from pathlib import Path\nimport os\nimport re\n\nbase = os.environ["BASE_PATH"]\n\nfor html_file in Path("site").rglob("*.html"):\n    text = html_file.read_text(encoding="utf-8")\n    if "<base href=" not in text and "<head>" in text:\n        text = text.replace("<head>", f"<head>\\n    <base href=\\"{base}/\\">", 1)\n    text = re.sub(r"(\\b(?:href|src)=[\\"\\\'])/(?!/)", rf"\\1{base}/", text)\n    html_file.write_text(text, encoding="utf-8")\n\nfor js_file in Path("site").rglob("*.js"):\n    text = js_file.read_text(encoding="utf-8")\n    text = text.replace(\'"/assets/\', f\'"{base}/assets/\')\n    text = text.replace("\'/assets/", f"\'{base}/assets/")\n    js_file.write_text(text, encoding="utf-8")\n\nfor css_file in Path("site").rglob("*.css"):\n    text = css_file.read_text(encoding="utf-8")\n    text = text.replace("url(/assets/", f"url({base}/assets/")\n    css_file.write_text(text, encoding="utf-8")'
-          fi
-
-          # GitHub Pages static hosting helpers.
+          # SPA fallback and Pages compatibility.
           cp site/index.html site/404.html
           touch site/.nojekyll
 
@@ -103,6 +86,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
